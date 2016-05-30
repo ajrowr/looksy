@@ -1,0 +1,87 @@
+<html>
+    <head>
+        
+        <title>Thingy</title>
+    
+        <style>
+        #webgl-canvas {
+            box-sizing: border-box;
+            height: 70%;
+            left: 0;
+            margin: 0;
+/*            position: absolute;*/
+            top: 0;
+            width: 100%;
+            
+            clear: both;
+            
+        }
+        </style>
+        
+        <script src="/friendly-carnival/lib/thirdparty/wglu-program.js"></script>
+        <script src="/friendly-carnival/lib/thirdparty/gl-matrix-min.js"></script>
+        
+        <script src="/friendly-carnival/lib/fc_util.js"></script>
+        <script src="/friendly-carnival/lib/fc_primitives.js"></script>
+        <script src="/friendly-carnival/lib/fc_scene.js"></script>
+        <script src="/friendly-carnival/lib/fc_feedtools.js"></script>
+        <script src="looksy_scene.js"></script>
+        
+        
+    </head>
+    
+    <body>
+        <div style="clear: both; position: absolute; top: 75%;">
+            <form onsubmit="return loadContent()">
+                <div>Enter a URL here to load an image or feed :)</div>
+                <div><input type="text" id="urlToLoad">
+                    <button type="button" type="submit" onclick="loadContent()" id="activate">Click!</button>
+                </div>
+                
+            </form>
+        </div>
+
+        <canvas id="webgl-canvas"></canvas>
+        <div id="presenting-message">Put on your headset now</div>
+        
+        
+        <script>
+        window.vrScene = new MyScene();
+        
+        window.vrScene.contentWrangler.openContent('http://meta4.io.codex.cx/looksy/content/');
+        
+        
+        var tumblrblog = function (ident, args) {
+            return 'http://crossorigin.me/http://api.tumblr.com/v2/blog/' + ident + '/posts?api_key=xd6KzwpJrvlgrOrX2pnLidmqIwP5hdFv5wO5OqRHegJJcYlYas' + (args ? '&'+args : '');
+        } /* Please don't steal my api key, that would be a mega dick move! :-| */
+
+        // window.vrScene.contentWrangler.setContentFeed(tumblrblog('betterplacestobe.tumblr.com'));
+        // window.vrScene.contentWrangler.setContentFeed(tumblrblog('wonderwall.gallery'));
+        // window.vrScene.contentWrangler.setContentFeed(tumblrblog('lvndscapes.tumblr.com'));
+        
+        var loadContent = function (evt) {
+            console.log(evt);
+            var url = document.getElementById('urlToLoad').value;
+            if (url.startsWith('@')) {
+                window.vrScene.contentWrangler.addContent(eval(url.slice(1)));
+            }
+            if (url.startsWith('data:') || url.endsWith('.jpg')) {
+                console.log('Found an image, adding it');
+                window.vrScene.contentWrangler.addImages([url]);
+                
+            }
+            else if (url.includes('.tumblr.com')) {
+                var res = RegExp('([a-zA-Z-]+\.tumblr\.com)').exec(url);
+                window.vrScene.contentWrangler.setContentFeed(tumblrblog(res[1]));
+                console.log('Found a tumblr, using it as a feed');
+            }
+            window.vrScene.contentWrangler.expandContentVisibleRange();
+            return false;
+        };
+        
+        </script>
+        <script src="/friendly-carnival/lib/fc_engine.js"></script>
+        
+    </body>
+    
+</html>
