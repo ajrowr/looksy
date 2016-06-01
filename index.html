@@ -18,13 +18,13 @@
         }
         </style>
         
-        <script src="/friendly-carnival/lib/thirdparty/wglu-program.js"></script>
-        <script src="/friendly-carnival/lib/thirdparty/gl-matrix-min.js"></script>
+        <script src="https://raw.githubusercontent.com/ajrowr/carnival/master/thirdparty/wglu-program.js"></script>
+        <script src="https://raw.githubusercontent.com/ajrowr/carnival/master/thirdparty/gl-matrix-min.js"></script>
         
-        <script src="/friendly-carnival/lib/fc_util.js"></script>
-        <script src="/friendly-carnival/lib/fc_primitives.js"></script>
-        <script src="/friendly-carnival/lib/fc_scene.js"></script>
-        <script src="/friendly-carnival/lib/fc_feedtools.js"></script>
+        <script src="https://raw.githubusercontent.com/ajrowr/carnival/master/lib/fc_util.js"></script>
+        <script src="https://raw.githubusercontent.com/ajrowr/carnival/master/lib/fc_primitives.js"></script>
+        <script src="https://raw.githubusercontent.com/ajrowr/carnival/master/lib/fc_scene.js"></script>
+        <script src="https://raw.githubusercontent.com/ajrowr/carnival/master/lib/fc_feedtools.js"></script>
         <script src="looksy_scene.js"></script>
         
         
@@ -48,13 +48,14 @@
         <script>
         window.vrScene = new MyScene();
         
-        window.vrScene.contentWrangler.openContent('http://meta4.io.codex.cx/looksy/content/');
+        window.vrScene.contentWrangler.openContent('http://meta4.codex.cx/looksy/content/');
         
-        
+        var tumblrAPIKey = 'YOUR_API_KEY_HERE';
         var tumblrblog = function (ident, args) {
-            return 'http://crossorigin.me/http://api.tumblr.com/v2/blog/' + ident + '/posts?api_key=xd6KzwpJrvlgrOrX2pnLidmqIwP5hdFv5wO5OqRHegJJcYlYas' + (args ? '&'+args : '');
-        } /* Please don't steal my api key, that would be a mega dick move! :-| */
-
+            return 'http://crossorigin.me/http://api.tumblr.com/v2/blog/' + ident + '/posts?api_key=' + tumblrAPIKey + (args ? '&'+args : '');
+        }
+        
+        /* Some good example tumblrs... */
         // window.vrScene.contentWrangler.setContentFeed(tumblrblog('betterplacestobe.tumblr.com'));
         // window.vrScene.contentWrangler.setContentFeed(tumblrblog('wonderwall.gallery'));
         // window.vrScene.contentWrangler.setContentFeed(tumblrblog('lvndscapes.tumblr.com'));
@@ -80,7 +81,7 @@
         };
         
         </script>
-        <script src="/friendly-carnival/lib/fc_engine.js"></script>
+        <script src="https://raw.githubusercontent.com/ajrowr/carnival/master/lib/fc_engine.js"></script>
         
     </body>
     
