@@ -104,6 +104,7 @@ window.MyScene = (function () {
             perRow: 7
         });
         this.contentWrangler = new FCFeedTools.ContentWrangler(this, {arranger:this.contentArranger});
+        this.contentWrangler.contentPostProcessor = this.assignObjectSelector;
         
         this.origin = {x:0, y:0, z:0};
         this.cursorOrigin = {x:0, z:0, y:0.5};
@@ -125,6 +126,11 @@ window.MyScene = (function () {
             scene.addTextureFromColor({hex:'#d8bfd8'}, 'thistle');
             scene.addTextureFromColor({r:1, g:1, b:1, a:1.0}, 'white');
             scene.addTextureFromColor({hex:'#c0c0c0'}, 'silver');
+            scene.addTextureFromColor({hex:'#ffd700'}, 'gold');
+            
+            /* Currently only some shaders support textures, in time all will. But the renderer skips things that don't have */
+            /* a texture assigned. So null is a placeholder which means "this texture will be ignored". */
+            scene.addTextureFromColor({hex:'#000000'}, 'null');
             
             reqPromises.push(scene.addShaderFromUrlPair(
                 'shaders/basic.vs', 'shaders/basic.fs', 'basic', {
@@ -147,6 +153,27 @@ window.MyScene = (function () {
         });
         
     }
+    
+    TheScene.prototype.assignObjectSelector = function (obj, scene) {
+        function mkSelecter(myScene) {
+            var selecter = function (obj, params) {
+                var cursor = myScene.getObjectByLabel('cursor');
+                cursor.animateToPosition({x:obj.pos.x * 0.8, z:obj.pos.z * 0.8, y:obj.pos.y+0.3}, 700);
+                if (obj.metadata.dest) {
+                    cursor.baseColor = {r:0.8, g:0.7, b: 0.1};
+                    cursor.shaderLabel = 'diffuse';
+                }
+                else {
+                    cursor.baseColor = {r:0.8, g:0.8, b:0.8};
+                    cursor.shaderLabel = 'diffuse';
+                }
+        
+            }
+            return selecter
+        };
+        obj.interactions['select'] = mkSelecter(scene);
+        
+    } 
     
     TheScene.prototype.setupScene = function () {
         console.log('Using scene setup from MyScene')
@@ -194,11 +221,11 @@ window.MyScene = (function () {
             var idx = scene.selectedBoardIdx;
             console.log('Teleporting to', idx);
             if (idx === null) return;
-            var floor = scene.getObjectByLabel('floor');
+            var raft = scene.getObjectByLabel('raft');
             var selection = scene.sceneBoards[scene.selectedBoardIdx];
             var pos = {x:selection.pos.x * 0.5, z:selection.pos.z * 0.5, y:selection.pos.y+0.3}
             scene.setPlayerLocation(pos);
-            floor.relocateTo(pos);
+            raft.relocateTo(pos);
             
         }
         
@@ -220,7 +247,7 @@ window.MyScene = (function () {
                 }
             }
             scene.getObjectByLabel('cursor').relocateTo(scene.cursorOrigin);
-            scene.moveFloorAndPlayerTo(scene.origin);
+            scene.moveRaftAndPlayerTo(scene.origin);
         }
         
         var elevator = function (cmd, pressure) {
@@ -235,7 +262,7 @@ window.MyScene = (function () {
             }
             var loc = scene.playerLocation;
             var factor = direction * 0.1 * pressure;
-            scene.moveFloorAndPlayerTo({x:loc.x, y:loc.y+factor, z:loc.z});
+            scene.moveRaftAndPlayerTo({x:loc.x, y:loc.y+factor, z:loc.z});
             
         }
         
@@ -289,12 +316,12 @@ window.MyScene = (function () {
         // VRSamplesUtil.addButton("Teleport to cursor", "T", null, teleportToSelection);
         // VRSamplesUtil.addButton("Enter", "N", null, enter);
         
-        /* Floor */
+        /* Raft */
         scene.addObject(new FCShapes.GroundedCuboid(
             {x: 0, z: 0, y: 0},
             {w: scene.stageParams.sizeX, d: scene.stageParams.sizeZ, h: 0.01},
             null,
-            {label: 'floor', textureLabel: 'leaves01', shaderLabel: 'basic'}
+            {label: 'raft', textureLabel: 'leaves01', shaderLabel: 'basic'}
         ));
         
         /* Cursor */
@@ -302,7 +329,7 @@ window.MyScene = (function () {
             scene.cursorOrigin,
             {w: 0.3, h:0.3, d:0.3},
             null,
-            {label: 'cursor', textureLabel: 'royalblue', shaderLabel: 'diffuse'}
+            {label: 'cursor', textureLabel: 'null', shaderLabel: 'diffuse', baseColor: {r:0.8, g:0.8, b: 0.8}}
         );
         cursor.behaviours.push(function (drawable, timePoint) {
             drawable.currentOrientation = {x:0.0, y:Math.PI*2*(timePoint/7000), z:0.0};
@@ -353,20 +380,20 @@ window.MyScene = (function () {
         
         
         var tracker1 = new FCShapes.ControllerShape(
-            {x: 0, z:0, y: -0.5},
+            {x: 0, z:0, y: -0.5}, /* Hide under floor until needed */
             {w: 0.1, h: 0.03, d: 0.3},
             null,
-            {label: 'gpTracker1', textureLabel: 'royalblue', shaderLabel: 'diffuse', groupLabel: 'gpTrackers',
+            {label: 'gpTracker1', textureLabel: 'null', shaderLabel: 'diffuse', groupLabel: 'gpTrackers',
             baseColor: {r:0.1, g:0.2, b:0.6, a:1.0}}
         );
         // tracker1.behaviours.push(mkTracker(0));
         tracker1.behaviours.push(FCUtil.makeGamepadTracker(scene, 0, buttonHandler));
 
         var tracker2 = new FCShapes.ControllerShape(
-            {x: 0, z:0, y: -0.5},
+            {x: 0, z:0, y: -0.5}, /* Hide under floor until needed */
             {w: 0.1, h: 0.03, d: 0.3},
             null,
-            {label: 'gpTracker2', textureLabel: 'green', shaderLabel: 'diffuse', groupLabel: 'gpTrackers',
+            {label: 'gpTracker2', textureLabel: 'null', shaderLabel: 'diffuse', groupLabel: 'gpTrackers',
             baseColor: {r:0.1, g:0.6, b:0.2, a:1.0}}
         );
         tracker2.behaviours.push(FCUtil.makeGamepadTracker(scene, 1, buttonHandler));
@@ -375,7 +402,7 @@ window.MyScene = (function () {
         scene.addObject(tracker2);
         
         var infoDisplay = new FCShapes.GroundedCuboid(
-            null,
+            {x: 0, z: 0, y: -0.5}, /* Hide under floor until needed */
             {w: 0.15, h:0.01, d:0.05}, /* In this case h and d are reversed */
             null,
             {
