@@ -109,6 +109,8 @@ window.MyScene = (function () {
         this.origin = {x:0, y:0, z:0};
         this.cursorOrigin = {x:0, z:0, y:0.5};
         
+        this.modelSources = {};
+        
         this.isRendering = false; /* This will be set true by the engine once rendering commences */
         
         FCScene.call(this);
@@ -116,6 +118,17 @@ window.MyScene = (function () {
     // var TheScene = {};
     TheScene.prototype = Object.create(FCScene.prototype);
         
+    TheScene.prototype.loadModelSource = function (srcUrl, label) {
+        var scene = this;
+        return new Promise(function (resolve, reject) {
+            FCShapes.loadSourceFromURL(srcUrl)
+            .then(function (src) {
+                scene.modelSources[label] = src;
+                resolve();
+            });
+        });
+    }
+    
     TheScene.prototype.setupPrereqs = function () {
         var scene = this;
         var reqPromises = [];
@@ -147,6 +160,8 @@ window.MyScene = (function () {
                 }
             ));
             reqPromises.push(scene.addTextureFromImage('textures/leaves01_1024.png', 'leaves01'));
+            reqPromises.push(scene.loadModelSource('models/controlleresque.stl', 'controlleresque'));
+            
             Promise.all(reqPromises).then(function () {
                 resolve();
             });
@@ -378,23 +393,56 @@ window.MyScene = (function () {
             
         }
         
+        var DEG=360/(2*Math.PI);
+        var _hidden_beneath_floor = {x:0, y:-0.5, z:0};
+        var _controlleresque = {
+            src: scene.modelSources.controlleresque,
+            translate: {x:0.00, y:-0.016, z:0.15},
+            scale: {scale:0.01},
+            rotate: {x:0/DEG, y:180/DEG, z:90/DEG}, 
+            greenColor: {r:0.2, g:0.9, b:0.6},
+            blueColor: {r:0.2, g:0.6, b:0.9}
+        };
+        /* After a bit more refinement, these controlleresques will probably replace the controller models altogether. */
+        /* But for now they're a bit too experimental. */
+        /* And besides I kind of like the way they look. */
+        var c1 = new FCShapes.LoaderShape(
+            _controlleresque.src, 
+            _hidden_beneath_floor, 
+            _controlleresque.scale, 
+            _controlleresque.rotate, 
+            {textureLabel:'null', shaderLabel:'diffuse', baseColor: _controlleresque.blueColor}
+        );
+        c1.translation = _controlleresque.translate;
+        c1.behaviours.push(FCUtil.makeGamepadTracker(scene, 0, null));
+        scene.addObject(c1);
         
+        var c2 = new FCShapes.LoaderShape(
+            _controlleresque.src, 
+            _hidden_beneath_floor, 
+            _controlleresque.scale, 
+            _controlleresque.rotate, 
+            {textureLabel:'null', shaderLabel:'diffuse', baseColor: _controlleresque.greenColor}
+        );
+        c2.translation = _controlleresque.translate;
+        c2.behaviours.push(FCUtil.makeGamepadTracker(scene, 1, null));
+        scene.addObject(c2);
+                
         var tracker1 = new FCShapes.ControllerShape(
-            {x: 0, z:0, y: -0.5}, /* Hide under floor until needed */
+            _hidden_beneath_floor, /* Hide under floor until needed */
             {w: 0.1, h: 0.03, d: 0.3},
             null,
             {label: 'gpTracker1', textureLabel: 'null', shaderLabel: 'diffuse', groupLabel: 'gpTrackers',
-            baseColor: {r:0.1, g:0.2, b:0.6, a:1.0}}
+            baseColor: {r:0.1, g:0.2, b:0.6, a:1.0}} /* Blue */
         );
-        // tracker1.behaviours.push(mkTracker(0));
         tracker1.behaviours.push(FCUtil.makeGamepadTracker(scene, 0, buttonHandler));
 
         var tracker2 = new FCShapes.ControllerShape(
-            {x: 0, z:0, y: -0.5}, /* Hide under floor until needed */
+            _hidden_beneath_floor, /* Hide under floor until needed */
             {w: 0.1, h: 0.03, d: 0.3},
             null,
             {label: 'gpTracker2', textureLabel: 'null', shaderLabel: 'diffuse', groupLabel: 'gpTrackers',
-            baseColor: {r:0.1, g:0.6, b:0.2, a:1.0}}
+            baseColor: {r:0.1, g:0.6, b:0.2, a:1.0}} /* Green */
         );
         tracker2.behaviours.push(FCUtil.makeGamepadTracker(scene, 1, buttonHandler));
         
