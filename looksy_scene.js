@@ -218,7 +218,7 @@ window.MyScene = (function () {
         
         if (params.floorTextureLabel) {
             var floor = scene.getObjectByLabel('floor');
-            floor.faces.top.textureLabel = params.floorTextureLabel; /* UGH. TODO. Floor shouldn't use something with 6 faces */
+            floor.textureLabel = params.floorTextureLabel;
         }
         this.contentArranger = new FCFeedTools.CylinderArranger({
             boardHeight: params.boardHeight || 5.0,
@@ -234,7 +234,8 @@ window.MyScene = (function () {
         console.log('Using scene setup from MyScene')
         
         var scene = this;
-        var wrangler = scene.contentWrangler;        
+        var wrangler = scene.contentWrangler;
+        var DEG=360/(2*Math.PI);
                 
         var mkSel = function (deltaC, deltaR) {
             var fn = function () {
@@ -380,11 +381,11 @@ window.MyScene = (function () {
         ));
         
         /* Floor */
-        scene.addObject(new FCShapes.GroundedCuboid(
+        scene.addObject(new FCShapes.WallShape(
             {x: 0, z: 0, y: -0.02},
-            {w: 20.0, d: 20.0, h: 0.01},
-            null,
-            {label: 'floor', textureLabel: 'desert01', shaderLabel: 'basic'}
+            {minX: -120, maxX: 120, minY: -120, maxY: 120},
+            {x:270/DEG, y:0/DEG, z:0/DEG},
+            {label: 'floor', textureLabel: 'desert01', shaderLabel: 'basic', segmentsX: 50, segmentsY: 50}
         ))
         
         /* Cursor */
@@ -441,7 +442,6 @@ window.MyScene = (function () {
             
         }
         
-        var DEG=360/(2*Math.PI);
         var _hidden_beneath_floor = {x:0, y:-0.5, z:0};
         var _controlleresque = {
             src: scene.modelSources.controlleresque,
