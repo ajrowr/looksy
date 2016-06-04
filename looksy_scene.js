@@ -165,6 +165,7 @@ window.MyScene = (function () {
             reqPromises.push(scene.addTextureFromImage('textures/leaves01_1024.png', 'leaves01'));
             reqPromises.push(scene.addTextureFromImage('textures/opengameart-org/461223101.jpg', 'desert01'))
             reqPromises.push(scene.addTextureFromImage('textures/opengameart-org/461223120.jpg', 'leafish01'))
+            reqPromises.push(scene.addTextureFromImage('textures/opengameart-org/461223132.jpg', 'marble01'))
             reqPromises.push(scene.loadModelSource('models/controlleresque.stl', 'controlleresque'));
             
             Promise.all(reqPromises).then(function () {
@@ -199,6 +200,7 @@ window.MyScene = (function () {
     /* Remember, $this != scene */
     TheScene.prototype.updateScene = function (params, scene) {
         console.log(params);
+        var wrangler = this;
         if (params.room) {
             var roomParams = {
                 /* coming soon */
@@ -220,7 +222,7 @@ window.MyScene = (function () {
             var floor = scene.getObjectByLabel('floor');
             floor.textureLabel = params.floorTextureLabel;
         }
-        this.contentArranger = new FCFeedTools.CylinderArranger({
+        wrangler.contentParams.arranger = new FCFeedTools.CylinderArranger({
             boardHeight: params.boardHeight || 5.0,
             rowHeight: params.rowHeight || 6.0,
             boardDistance: params.boardDistance || 7.0,
@@ -385,7 +387,7 @@ window.MyScene = (function () {
             {x: 0, z: 0, y: -0.02},
             {minX: -120, maxX: 120, minY: -120, maxY: 120},
             {x:270/DEG, y:0/DEG, z:0/DEG},
-            {label: 'floor', textureLabel: 'desert01', shaderLabel: 'basic', segmentsX: 50, segmentsY: 50}
+            {label: 'floor', textureLabel: 'marble01', shaderLabel: 'basic', segmentsX: 50, segmentsY: 50}
         ))
         
         /* Cursor */
@@ -521,17 +523,27 @@ window.MyScene = (function () {
                         
                         /* Boardslist loader should have set up nice descriptions for us to use. */
                         /* But first check whether we've already drawn this one */
+                        var dBlocks = [];
                         if (bmeta.descriptionBlocks && bmeta.descriptionBlocks.length > 0) {
                             if (scratch.lastDescBZero !== bmeta.descriptionBlocks[0]) {
                                 redraw = true;
                                 scratch.lastDescBZero = bmeta.descriptionBlocks[0];
+                                dBlocks = bmeta.descriptionBlocks;
+                            }
+                        }
+                        else if (bmeta.description) {
+                            // console.log('hmm');
+                            if (scratch.lastDescBZero !== bmeta.description) {
+                                redraw = true;
+                                scratch.lastDescBZero = bmeta.description;
+                                dBlocks.push({t:bmeta.description, size: '50', color:'black'});
                             }
                         }
                         
                         var textScale = 3300; /* Bigger the scale, smaller the text */
                         var cW = Math.round(drawable.size.w*textScale), cH = Math.round(drawable.size.d*textScale);
                         if (redraw) {
-                            drawable.faces.top.texture = FCUtil.renderTextToTexture(scene.gl, bmeta.descriptionBlocks, {
+                            drawable.faces.top.texture = FCUtil.renderTextToTexture(scene.gl, dBlocks, {
                                 canvasWidth:cW, canvasHeight:cH, canvasColor: 'white'
                             });
                             drawable.shaderLabel = 'basic'; /* Diffuse doesn't support textures yet */
