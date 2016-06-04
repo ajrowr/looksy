@@ -104,7 +104,10 @@ window.MyScene = (function () {
             perRow: 7
         });
         this.contentWrangler = new FCFeedTools.ContentWrangler(this, {arranger:this.contentArranger});
+        
+        /* You have to be a bit careful with these since they actually get called in the context of the wrangler, like a mixin */
         this.contentWrangler.contentPostProcessor = this.assignObjectSelector;
+        this.contentWrangler.sceneUpdateCallback = this.updateScene;
         
         this.origin = {x:0, y:0, z:0};
         this.cursorOrigin = {x:0, z:0, y:0.5};
@@ -160,6 +163,8 @@ window.MyScene = (function () {
                 }
             ));
             reqPromises.push(scene.addTextureFromImage('textures/leaves01_1024.png', 'leaves01'));
+            reqPromises.push(scene.addTextureFromImage('textures/opengameart-org/461223101.jpg', 'desert01'))
+            reqPromises.push(scene.addTextureFromImage('textures/opengameart-org/461223120.jpg', 'leafish01'))
             reqPromises.push(scene.loadModelSource('models/controlleresque.stl', 'controlleresque'));
             
             Promise.all(reqPromises).then(function () {
@@ -169,6 +174,7 @@ window.MyScene = (function () {
         
     }
     
+    /* Remember, $this != scene */
     TheScene.prototype.assignObjectSelector = function (obj, scene) {
         function mkSelecter(myScene) {
             var selecter = function (obj, params) {
@@ -188,7 +194,41 @@ window.MyScene = (function () {
         };
         obj.interactions['select'] = mkSelecter(scene);
         
-    } 
+    }
+    
+    /* Remember, $this != scene */
+    TheScene.prototype.updateScene = function (params, scene) {
+        console.log(params);
+        if (params.room) {
+            var roomParams = {
+                /* coming soon */
+            }
+        }
+        if (params.floor) {
+            var floorParams = {
+                offset: params.floor.offset || 0.0, /* TODO not supported yet */
+                textureLabel: params.floor.textureLabel || 'green'
+            }
+        }
+        if (params.raft) {
+            var raftParams = {
+                /* coming soon */
+            }
+        }
+        
+        if (params.floorTextureLabel) {
+            var floor = scene.getObjectByLabel('floor');
+            floor.faces.top.textureLabel = params.floorTextureLabel; /* UGH. TODO. Floor shouldn't use something with 6 faces */
+        }
+        this.contentArranger = new FCFeedTools.CylinderArranger({
+            boardHeight: params.boardHeight || 5.0,
+            rowHeight: params.rowHeight || 6.0,
+            boardDistance: params.boardDistance || 7.0,
+            baseOffset: params.baseOffset || 0.0,
+            perRow: params.perRow || 7
+        });
+        console.log('Callback was called back');
+    }
     
     TheScene.prototype.setupScene = function () {
         console.log('Using scene setup from MyScene')
@@ -285,7 +325,7 @@ window.MyScene = (function () {
         var elevatorStopped = function () {
             selectNearestToController(1);
             
-            /* If player's new position brings them within 15 meters of the uppermost board,
+            /* If player's new position brings them within 10 meters of the uppermost board,
                display more content if available */
             var maxBoard = scene.sceneBoards.slice(-1)[0];
             console.log('contentData length', wrangler.contentData.length, 'sceneBoards length', scene.sceneBoards.length);
@@ -338,6 +378,14 @@ window.MyScene = (function () {
             null,
             {label: 'raft', textureLabel: 'leaves01', shaderLabel: 'basic'}
         ));
+        
+        /* Floor */
+        scene.addObject(new FCShapes.GroundedCuboid(
+            {x: 0, z: 0, y: -0.02},
+            {w: 20.0, d: 20.0, h: 0.01},
+            null,
+            {label: 'floor', textureLabel: 'desert01', shaderLabel: 'basic'}
+        ))
         
         /* Cursor */
         var cursor = new FCShapes.GroundedCuboid(
