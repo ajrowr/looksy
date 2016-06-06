@@ -97,13 +97,7 @@ window.MyScene = (function () {
         this.sceneBoards = [];
         this.selectedBoardIdx = null;
         
-        this.contentArranger = new FCFeedTools.CylinderArranger({
-            boardHeight: 5.0,
-            rowHeight: 30.0,
-            // boardDistance: 7.0,
-            perRow: 7
-        });
-        this.contentWrangler = new FCFeedTools.ContentWrangler(this, {arranger:this.contentArranger});
+        this.contentWrangler = new FCFeedTools.ContentWrangler(this);
         
         /* You have to be a bit careful with these since they actually get called in the context of the wrangler, like a mixin */
         this.contentWrangler.contentPostProcessor = this.assignObjectSelector;
@@ -115,12 +109,17 @@ window.MyScene = (function () {
         this.modelSources = {};
         
         this.isRendering = false; /* This will be set true by the engine once rendering commences */
+        this.isReady = false; /* This is set by the scene itself. All scene updates should be delayed until isRendering && isReady */
         
         FCScene.call(this);
     }
     // var TheScene = {};
     TheScene.prototype = Object.create(FCScene.prototype);
-        
+    
+    TheScene.prototype.getArranger = function () {
+        return this.contentWrangler.contentParams.arranger;
+    }
+    
     TheScene.prototype.loadModelSource = function (srcUrl, label) {
         var scene = this;
         return new Promise(function (resolve, reject) {
@@ -163,10 +162,16 @@ window.MyScene = (function () {
                 }
             ));
             reqPromises.push(scene.addTextureFromImage('textures/leaves01_1024.png', 'leaves01'));
-            reqPromises.push(scene.addTextureFromImage('textures/opengameart-org/461223101.jpg', 'desert01'))
-            reqPromises.push(scene.addTextureFromImage('textures/opengameart-org/461223120.jpg', 'leafish01'))
-            reqPromises.push(scene.addTextureFromImage('textures/opengameart-org/461223132.jpg', 'marble01'))
+            reqPromises.push(scene.addTextureFromImage('textures/opengameart-org/461223101.jpg', 'desert01'));
+            reqPromises.push(scene.addTextureFromImage('textures/opengameart-org/461223120.jpg', 'leafish01'));
+            reqPromises.push(scene.addTextureFromImage('textures/opengameart-org/461223132.jpg', 'marble01'));
+            reqPromises.push(scene.addTextureFromImage('textures/grassygrass01.jpg', 'grass01'));
+            reqPromises.push(scene.addTextureFromImage('textures/concrete01.jpg', 'concrete01'));
+            reqPromises.push(scene.addTextureFromImage('textures/pano01d.jpg', 'parkpano01'));
+            reqPromises.push(scene.addTextureFromImage('textures/pano03b.jpg', 'citypano01'));
+            reqPromises.push(scene.addTextureFromImage('textures/sky01.jpg', 'sky01'));
             reqPromises.push(scene.loadModelSource('models/controlleresque.stl', 'controlleresque'));
+            reqPromises.push(scene.loadModelSource('models/meta4.stl', 'logotype'));
             
             Promise.all(reqPromises).then(function () {
                 resolve();
@@ -201,35 +206,88 @@ window.MyScene = (function () {
     TheScene.prototype.updateScene = function (params, scene) {
         console.log(params);
         var wrangler = this;
-        if (params.room) {
-            var roomParams = {
-                /* coming soon */
+        
+        console.log('Callback was called back with params', params);
+        
+        /* Update the wrangler immediately since it's needed immediately */
+        var sceneParams = params || {}
+        wrangler.contentParams.arranger = new FCFeedTools.CylinderArranger({
+            boardHeight: sceneParams.boardHeight || 5.0,
+            rowHeight: sceneParams.rowHeight || 6.0,
+            boardDistance: sceneParams.boardDistance || 7.0,
+            baseOffset: sceneParams.baseOffset || 0.0,
+            perRow: sceneParams.perRow || 7
+        });
+    
+        /* Everything else can be queued if necessary */
+        var updateClosure = function () {
+            console.log('Updating scene with params', params);
+            var sceneParams = params || {};
+            
+            var skySpindleParams = sceneParams.skySpindle || {};
+            var spindle = scene.getObjectByLabel('world');
+            spindle.textureLabel = skySpindleParams.textureLabel || 'citypano01';
+            spindle.shaderLabel = skySpindleParams.shaderLabel || 'basic';
+            spindle.radius = skySpindleParams.radius || 20;
+            spindle.segmentCount = skySpindleParams.segmentCount || 100;
+            spindle.height = skySpindleParams.height || 60;
+            spindle.pos.y = skySpindleParams.verticalOffset || -20.1;
+            
+            var floorParams = sceneParams.floor || {};
+            console.log('Floor params', floorParams);
+            var floor = scene.getObjectByLabel('floor');
+            floor.textureLabel = floorParams.textureLabel || 'concrete01';
+            floor.shaderLabel = floorParams.shaderLabel || 'basic';
+            
+            var raftParams = sceneParams.raft || {}; /* TODO raft should not have 6 faces, that's silly */
+            var raft = scene.getObjectByLabel('raft');
+            raft.faces.top.textureLabel = raftParams.textureLabel || 'grass01';
+            raft.faces.top.shaderLabel = raftParams.shaderLabel || 'basic';
+            
+            var skyParams = sceneParams.sky || {};
+            var sky = scene.getObjectByLabel('sky');
+            sky.textureLabel = skyParams.textureLabel || 'sky01';
+            sky.shaderLabel = skyParams.shaderLabel || 'basic';
+            sky.pos.y = skyParams.height || 50;
+            
+            /* If there's a logo, position it just behind the final board position in the first row. */
+            /* So if the row is incomplete, the logo is visible. */
+            var logoParams = sceneParams.logoType || {};
+            var logo = scene.getObjectByLabel('logotype');
+            if (logo) {
+                var a = wrangler.contentParams.arranger;
+                var q = a.arrange(0, a.perRow)[a.perRow-1];
+                logo.pos = q.pos;
+                logo.orientation = q.ori;
+
+                logo.textureLabel = logoParams.textureLabel || 'null';
+                logo.shaderLabel = logoParams.shaderLabel || 'diffuse';
+                logo.baseColor = logoParams.baseColor || {r:0.7, g:0.7, b:0.8};
             }
-        }
-        if (params.floor) {
-            var floorParams = {
-                offset: params.floor.offset || 0.0, /* TODO not supported yet */
-                textureLabel: params.floor.textureLabel || 'green'
-            }
-        }
-        if (params.raft) {
-            var raftParams = {
-                /* coming soon */
-            }
+            
+            /* Flush any geometry changes */
+            scene.prepareScene();
         }
         
-        if (params.floorTextureLabel) {
-            var floor = scene.getObjectByLabel('floor');
-            floor.textureLabel = params.floorTextureLabel;
+        if (scene.isRendering && scene.isReady) {
+            console.log('Executing scene update')
+            updateClosure();
         }
-        wrangler.contentParams.arranger = new FCFeedTools.CylinderArranger({
-            boardHeight: params.boardHeight || 5.0,
-            rowHeight: params.rowHeight || 6.0,
-            boardDistance: params.boardDistance || 7.0,
-            baseOffset: params.baseOffset || 0.0,
-            perRow: params.perRow || 7
-        });
-        console.log('Callback was called back');
+        else {
+            console.log('Queueing scene update');
+            var intervalHandle = {};
+            var mkIntervalHandler = function(myScene, updater, iH) {
+                return function () {
+                    if (myScene.isRendering && myScene.isReady) {
+                        window.clearInterval(iH.intervalId);
+                        console.log('Executing queued scene update');
+                        updater();
+                    }                    
+                }
+            }
+            intervalHandle.intervalId = window.setInterval(mkIntervalHandler(scene, updateClosure, intervalHandle), 100);
+        }
+        
     }
     
     TheScene.prototype.setupScene = function () {
@@ -238,11 +296,12 @@ window.MyScene = (function () {
         var scene = this;
         var wrangler = scene.contentWrangler;
         var DEG=360/(2*Math.PI);
+        var _hidden_beneath_floor = {x:0, y:-3.5, z:0};
                 
         var mkSel = function (deltaC, deltaR) {
             var fn = function () {
                 var boards = scene.sceneBoards;
-                var perRow = scene.contentArranger.perRow;
+                var perRow = scene.getArranger().perRow;
                 var idx = scene.selectedBoardIdx;
                 var newIdx;
                 
@@ -374,12 +433,14 @@ window.MyScene = (function () {
         // VRSamplesUtil.addButton("Teleport to cursor", "T", null, teleportToSelection);
         // VRSamplesUtil.addButton("Enter", "N", null, enter);
         
+        /* Set everything up by default with ugly-ass clashing colours and then update them to nicer things in the scene update callback */
+        
         /* Raft */
         scene.addObject(new FCShapes.GroundedCuboid(
             {x: 0, z: 0, y: 0},
             {w: scene.stageParams.sizeX, d: scene.stageParams.sizeZ, h: 0.01},
             null,
-            {label: 'raft', textureLabel: 'leaves01', shaderLabel: 'basic'}
+            {label: 'raft', textureLabel: 'silver', shaderLabel: 'basic'}
         ));
         
         /* Floor */
@@ -387,8 +448,41 @@ window.MyScene = (function () {
             {x: 0, z: 0, y: -0.02},
             {minX: -120, maxX: 120, minY: -120, maxY: 120},
             {x:270/DEG, y:0/DEG, z:0/DEG},
-            {label: 'floor', textureLabel: 'marble01', shaderLabel: 'basic', segmentsX: 50, segmentsY: 50}
-        ))
+            {label: 'floor', textureLabel: 'thistle', shaderLabel: 'basic', segmentsX: 50, segmentsY: 50}
+        ));
+        
+        /* Worldbox */
+        var worldbox = new FCShapes.CylinderShape(
+            // {radius: 50, height: 70},
+            // {x:0, y:-3.5, z:0}, //parkpano01
+            // {radius: 20, height: 20}, //parkpano01
+            {x:0, y:-19.5, z:0}, //citypano01
+            {radius: 20, height: 60}, //citypano01
+            null,
+            {label: 'world', textureLabel: 'green', shaderLabel: 'basic', segmentCount: 100, segmentsFaceInwards: true}
+        );
+        scene.addObject(worldbox);
+        
+        /* Skyplane */
+        scene.addObject(new FCShapes.WallShape(
+            {x:0, y:50, z:0},
+            {minX: -120, maxX: 120, minY: -120, maxY: 120},
+            {x:90/DEG, y:0, z:0},
+            {label: 'sky', textureLabel: 'royalblue', shaderLabel: 'basic', segmentsX: 1, segmentsY: 1}
+        ));
+        
+        /* Logotype */
+        var _ltscalefactor = 1/6.5;
+        var logotype = new FCShapes.LoaderShape(
+            scene.modelSources.logotype,
+            _hidden_beneath_floor,
+            // {x:5, y:0, z:-5},
+            {scale: 1.0*_ltscalefactor},
+            null,
+            {textureLabel: 'null', shaderLabel: 'diffuse', baseColor: {r:0.2, g:0.9, b:0.5}, label: 'logotype'}
+        );
+        logotype.translation = {x:-22.0*_ltscalefactor, y:0, z:-3}; /* Scale-adjusted modelspace translate */
+        scene.addObject(logotype);
         
         /* Cursor */
         var cursor = new FCShapes.GroundedCuboid(
@@ -444,7 +538,6 @@ window.MyScene = (function () {
             
         }
         
-        var _hidden_beneath_floor = {x:0, y:-0.5, z:0};
         var _controlleresque = {
             src: scene.modelSources.controlleresque,
             translate: {x:0.00, y:-0.016, z:0.15},
@@ -558,8 +651,7 @@ window.MyScene = (function () {
         
         
         scene.addObject(infoDisplay);
-        
-        
+                
         var makeOrbimgAnaglyph = function (urlBase, frameCount, params) {
             return new Promise(function (resolve, reject) {
                 params = params || {};
@@ -646,6 +738,8 @@ window.MyScene = (function () {
             });
         }
         
+        /* Mark the scene as ready in order for content updates to happen. */
+        scene.isReady = true;
         
     };
     
