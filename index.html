@@ -18,13 +18,13 @@
         }
         </style>
         
-        <script src="https://raw.githubusercontent.com/ajrowr/carnival/master/thirdparty/wglu-program.js"></script>
-        <script src="https://raw.githubusercontent.com/ajrowr/carnival/master/thirdparty/gl-matrix-min.js"></script>
+        <script src="/carnival/thirdparty/wglu-program.js"></script>
+        <script src="/carnival/thirdparty/gl-matrix-min.js"></script>
         
-        <script src="https://raw.githubusercontent.com/ajrowr/carnival/master/lib/fc_util.js"></script>
-        <script src="https://raw.githubusercontent.com/ajrowr/carnival/master/lib/fc_primitives.js"></script>
-        <script src="https://raw.githubusercontent.com/ajrowr/carnival/master/lib/fc_scene.js"></script>
-        <script src="https://raw.githubusercontent.com/ajrowr/carnival/master/lib/fc_feedtools.js"></script>
+        <script src="/carnival/lib/fc_util.js"></script>
+        <script src="/carnival/lib/fc_primitives.js"></script>
+        <script src="/carnival/lib/fc_scene.js"></script>
+        <script src="/carnival/lib/fc_feedtools.js"></script>
         <script src="looksy_scene.js"></script>
         
         
@@ -66,7 +66,7 @@
             if (url.startsWith('@')) {
                 window.vrScene.contentWrangler.addContent(eval(url.slice(1)));
             }
-            if (url.startsWith('data:') || url.endsWith('.jpg')) {
+            if (url.startsWith('data:') || url.endsWith('.jpg') || url.endsWith('.png') || url.endsWith('.gif')) {
                 console.log('Found an image, adding it');
                 window.vrScene.contentWrangler.addImages([url]);
                 
@@ -76,12 +76,15 @@
                 window.vrScene.contentWrangler.setContentFeed(tumblrblog(res[1]));
                 console.log('Found a tumblr, using it as a feed');
             }
+            else {
+                window.vrScene.contentWrangler.openContent(url);
+            }
             window.vrScene.contentWrangler.expandContentVisibleRange();
             return false;
         };
         
         </script>
-        <script src="https://raw.githubusercontent.com/ajrowr/carnival/master/lib/fc_engine.js"></script>
+        <script src="/carnival/lib/fc_engine.js"></script>
         
     </body>
     
