@@ -703,4 +703,54 @@ window.MyScene = (function () {
                     }
                     var rotateRight = function () {
                         nymph.faces.front.leftEyeTexture = anaTextures[ctr%count].texture;
-                        nymph.faces.front.rightEyeTexture = anaTextures[(
+                        nymph.faces.front.rightEyeTexture = anaTextures[(ctr+1)%count].texture;
+                        ctr--;
+                        if (ctr<0) {
+                            ctr = anaTextures.length - (ctr+1);
+                        }
+                    
+                    }
+                    resolve({
+                        obj: nymph,
+                        rotateLeft: rotateLeft,
+                        rotateRight: rotateRight
+                    });
+                    
+                });
+            })
+        }
+        
+        if (false) {
+            makeOrbimgAnaglyph('http://lifemodel360.net/model/nymph/pose/22/125/frame/@@/', 72)
+            .then(function (ana) {
+                window.nymph = ana;
+                scene.addObject(ana.obj);
+                console.log('Nymph in the house!');
+                window.setInterval(function () {
+                    ana.rotateLeft();
+                }, 30);
+            });
+        }
+        if (false) {
+            makeOrbimgAnaglyph('http://lifemodel360.net/model/alana/pose/1/42/frame/@@/', 72, {
+                ori: {x:0, y:Math.PI, z:0},
+                pos: {x:1, y:0, z:1},
+            })
+            .then(function (ana) {
+                window.alana = ana;
+                scene.addObject(ana.obj);
+                console.log('Alana in the house!');
+                window.setInterval(function () {
+                    ana.rotateLeft();
+                }, 30);
+            });
+        }
+        
+        /* Mark the scene as ready in order for content updates to happen. */
+        scene.isReady = true;
+        
+    };
+    
+    return TheScene;
+})();
+
