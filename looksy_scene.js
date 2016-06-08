@@ -137,8 +137,11 @@ window.MyScene = (function () {
         return new Promise(function (resolve, reject) {
             scene.addTextureFromColor({r:0.1, g:0.2, b:0.6, a:1.0}, 'royalblue');
             scene.addTextureFromColor({r:0.1, g:0.6, b:0.2, a:1.0}, 'green');
+            scene.addTextureFromColor({r:0.1, g:0.1, b:0.1, a:1.0}, 'deepgray');
             scene.addTextureFromColor({r:0.7, g:0.2, b:0.2, a:1.0}, 'terracotta');
             scene.addTextureFromColor({hex:'#d8bfd8'}, 'thistle');
+            scene.addTextureFromColor({hex:'#191970'}, 'midnightblue');
+            scene.addTextureFromColor({hex:'#080815'}, 'darkmidnightblue');
             scene.addTextureFromColor({r:1, g:1, b:1, a:1.0}, 'white');
             scene.addTextureFromColor({hex:'#c0c0c0'}, 'silver');
             scene.addTextureFromColor({hex:'#ffd700'}, 'gold');
@@ -168,6 +171,8 @@ window.MyScene = (function () {
             reqPromises.push(scene.addTextureFromImage('textures/grassygrass01.jpg', 'grass01'));
             reqPromises.push(scene.addTextureFromImage('textures/concrete01.jpg', 'concrete01'));
             reqPromises.push(scene.addTextureFromImage('textures/pano01d.jpg', 'parkpano01'));
+            reqPromises.push(scene.addTextureFromImage('textures/savannahpano01.jpg', 'panosavannah01'));
+            reqPromises.push(scene.addTextureFromImage('textures/astro02.jpg', 'pano_astro02'));
             reqPromises.push(scene.addTextureFromImage('textures/pano03b.jpg', 'citypano01'));
             reqPromises.push(scene.addTextureFromImage('textures/sky01.jpg', 'sky01'));
             reqPromises.push(scene.loadModelSource('models/controlleresque.stl', 'controlleresque'));
@@ -481,7 +486,7 @@ window.MyScene = (function () {
             null,
             {textureLabel: 'null', shaderLabel: 'diffuse', baseColor: {r:0.2, g:0.9, b:0.5}, label: 'logotype'}
         );
-        logotype.translation = {x:-22.0*_ltscalefactor, y:0, z:-3}; /* Scale-adjusted modelspace translate */
+        logotype.translation = {x:-16.0*_ltscalefactor, y:0, z:-3}; /* Scale-adjusted modelspace translate */
         scene.addObject(logotype);
         
         /* Cursor */
