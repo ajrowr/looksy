@@ -143,35 +143,41 @@ window.MyScene = (function () {
             scene.addTextureFromColor({hex:'#c0c0c0'}, 'silver');
             scene.addTextureFromColor({hex:'#ffd700'}, 'gold');
             
-            /* Currently only some shaders support textures, in time all will. But the renderer skips things that don't have */
+            /* Currently only some shaders support textures, in time most will. But the renderer skips things that don't have */
             /* a texture assigned. So null is a placeholder which means "this texture will be ignored". */
             scene.addTextureFromColor({hex:'#000000'}, 'null');
             
+            /* This is for those awkward situations where you have to store the app separately from the page that loads the app */
+            var assetPath = function (asset) {
+                var p = window.appAssetPaths && window.appAssetPaths.looksy || '';
+                return p + asset;
+            }
+            
             reqPromises.push(scene.addShaderFromUrlPair(
-                'shaders/basic.vs', 'shaders/basic.fs', 'basic', {
+                assetPath('shaders/basic.vs'), assetPath('shaders/basic.fs'), 'basic', {
                     position: 0,
                     texCoord: 1,
                     vertexNormal: 2                
                 }
             ));
             reqPromises.push(scene.addShaderFromUrlPair(
-                'shaders/diffuse1.vs', 'shaders/diffuse1.fs', 'diffuse', {
+                assetPath('shaders/diffuse1.vs'), assetPath('shaders/diffuse1.fs'), 'diffuse', {
                     position: 0,
                     texCoord: 1,
                     vertexNormal: 2                
                 }
             ));
-            reqPromises.push(scene.addTextureFromImage('textures/leaves01_1024.png', 'leaves01'));
-            reqPromises.push(scene.addTextureFromImage('textures/opengameart-org/461223101.jpg', 'desert01'));
-            reqPromises.push(scene.addTextureFromImage('textures/opengameart-org/461223120.jpg', 'leafish01'));
-            reqPromises.push(scene.addTextureFromImage('textures/opengameart-org/461223132.jpg', 'marble01'));
-            reqPromises.push(scene.addTextureFromImage('textures/grassygrass01.jpg', 'grass01'));
-            reqPromises.push(scene.addTextureFromImage('textures/concrete01.jpg', 'concrete01'));
-            reqPromises.push(scene.addTextureFromImage('textures/pano01d.jpg', 'parkpano01'));
-            reqPromises.push(scene.addTextureFromImage('textures/pano03b.jpg', 'citypano01'));
-            reqPromises.push(scene.addTextureFromImage('textures/sky01.jpg', 'sky01'));
-            reqPromises.push(scene.loadModelSource('models/controlleresque.stl', 'controlleresque'));
-            reqPromises.push(scene.loadModelSource('models/meta4.stl', 'logotype'));
+            reqPromises.push(scene.addTextureFromImage(assetPath('textures/leaves01_1024.png'), 'leaves01'));
+            reqPromises.push(scene.addTextureFromImage(assetPath('textures/opengameart-org/461223101.jpg'), 'desert01'));
+            reqPromises.push(scene.addTextureFromImage(assetPath('textures/opengameart-org/461223120.jpg'), 'leafish01'));
+            reqPromises.push(scene.addTextureFromImage(assetPath('textures/opengameart-org/461223132.jpg'), 'marble01'));
+            reqPromises.push(scene.addTextureFromImage(assetPath('textures/grassygrass01.jpg'), 'grass01'));
+            reqPromises.push(scene.addTextureFromImage(assetPath('textures/concrete01.jpg'), 'concrete01'));
+            reqPromises.push(scene.addTextureFromImage(assetPath('textures/pano01d.jpg'), 'parkpano01'));
+            reqPromises.push(scene.addTextureFromImage(assetPath('textures/pano03b.jpg'), 'citypano01'));
+            reqPromises.push(scene.addTextureFromImage(assetPath('textures/sky01.jpg'), 'sky01'));
+            reqPromises.push(scene.loadModelSource(assetPath('models/controlleresque.stl'), 'controlleresque'));
+            reqPromises.push(scene.loadModelSource(assetPath('models/meta4.stl'), 'logotype'));
             
             Promise.all(reqPromises).then(function () {
                 resolve();
