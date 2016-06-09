@@ -108,6 +108,8 @@ window.MyScene = (function () {
         
         this.modelSources = {};
         
+        this.elevatorEnabled = false;
+        
         this.isRendering = false; /* This will be set true by the engine once rendering commences */
         this.isReady = false; /* This is set by the scene itself. All scene updates should be delayed until isRendering && isReady */
         
@@ -379,19 +381,20 @@ window.MyScene = (function () {
         }
         
         var elevator = function (cmd, pressure) {
-            var direction = null;
-            switch (cmd) {
-            case 'up':
-                direction = 1;
-                break;
-            case 'down':
-                direction = -1;
-                break;
+            if (scene.elevatorEnabled) {
+                var direction = null;
+                switch (cmd) {
+                case 'up':
+                    direction = 1;
+                    break;
+                case 'down':
+                    direction = -1;
+                    break;
+                }
+                var loc = scene.playerLocation;
+                var factor = direction * 0.1 * pressure;
+                scene.moveRaftAndPlayerTo({x:loc.x, y:loc.y+factor, z:loc.z});
             }
-            var loc = scene.playerLocation;
-            var factor = direction * 0.1 * pressure;
-            scene.moveRaftAndPlayerTo({x:loc.x, y:loc.y+factor, z:loc.z});
-            
         }
         
         /* Elevator is stopped, so figure out what we're closest to and select it */
