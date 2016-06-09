@@ -178,6 +178,7 @@ window.MyScene = (function () {
             reqPromises.push(scene.addTextureFromImage(assetPath('textures/concrete01.jpg'), 'concrete01'));
             reqPromises.push(scene.addTextureFromImage(assetPath('textures/pano01d.jpg'), 'parkpano01'));
             reqPromises.push(scene.addTextureFromImage(assetPath('textures/pano03b.jpg'), 'citypano01'));
+            reqPromises.push(scene.addTextureFromImage(assetPath('textures/savannahpano01.jpg'), 'panosavannah01'));
             reqPromises.push(scene.addTextureFromImage(assetPath('textures/sky01.jpg'), 'sky01'));
             reqPromises.push(scene.loadModelSource(assetPath('models/controlleresque.stl'), 'controlleresque'));
             reqPromises.push(scene.loadModelSource(assetPath('models/meta4.stl'), 'logotype'));
