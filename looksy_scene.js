@@ -166,7 +166,7 @@ window.MyScene = (function () {
                 }
             ));
             reqPromises.push(scene.addShaderFromUrlPair(
-                assetPath('shaders/diffuse1.vs'), assetPath('shaders/diffuse1.fs'), 'diffuse', {
+                assetPath('shaders/diffuse2.vs'), assetPath('shaders/diffuse2.fs'), 'diffuse', {
                     position: 0,
                     texCoord: 1,
                     vertexNormal: 2                
@@ -200,11 +200,11 @@ window.MyScene = (function () {
                 var cursor = myScene.getObjectByLabel('cursor');
                 cursor.animateToPosition({x:obj.pos.x * 0.8, z:obj.pos.z * 0.8, y:obj.pos.y+0.3}, 700);
                 if (obj.metadata.dest) {
-                    cursor.baseColor = {r:0.8, g:0.7, b: 0.1};
+                    cursor.texture = scene.addTextureFromColor({r:0.8, g:0.7, b: 0.1});
                     cursor.shaderLabel = 'diffuse';
                 }
                 else {
-                    cursor.baseColor = {r:0.8, g:0.8, b:0.8};
+                    cursor.texture = scene.addTextureFromColor({r:0.8, g:0.8, b:0.8});
                     cursor.shaderLabel = 'diffuse';
                 }
         
@@ -271,9 +271,10 @@ window.MyScene = (function () {
                 logo.pos = q.pos;
                 logo.orientation = q.ori;
 
-                logo.textureLabel = logoParams.textureLabel || 'null';
+                // logo.textureLabel = logoParams.textureLabel || 'null';
                 logo.shaderLabel = logoParams.shaderLabel || 'diffuse';
-                logo.baseColor = logoParams.baseColor || {r:0.7, g:0.7, b:0.8};
+                // logo.baseColor = logoParams.baseColor || {r:0.6, g:0.6, b:0.6};
+                logo.texture = scene.addTextureFromColor(logoParams.baseColor || {r:0.6, g:0.6, b:0.6});
             }
             
             /* Flush any geometry changes */
@@ -491,17 +492,17 @@ window.MyScene = (function () {
             // {x:5, y:0, z:-5},
             {scale: 1.0*_ltscalefactor},
             null,
-            {textureLabel: 'null', shaderLabel: 'diffuse', baseColor: {r:0.2, g:0.9, b:0.5}, label: 'logotype'}
+            {shaderLabel: 'diffuse', texture: scene.addTextureFromColor({r:0.2, g:0.9, b:0.5}), label: 'logotype'}
         );
         logotype.translation = {x:-16.0*_ltscalefactor, y:0, z:-3}; /* Scale-adjusted modelspace translate */
         scene.addObject(logotype);
         
         /* Cursor */
-        var cursor = new FCShapes.GroundedCuboid(
+        var cursor = new FCShapes.SimpleCuboid(
             scene.cursorOrigin,
             {w: 0.3, h:0.3, d:0.3},
             null,
-            {label: 'cursor', textureLabel: 'null', shaderLabel: 'diffuse', baseColor: {r:0.8, g:0.8, b: 0.8}}
+            {label: 'cursor', shaderLabel: 'diffuse', texture: scene.addTextureFromColor({r:0.6, g:0.6, b: 0.6})}
         );
         cursor.behaviours.push(function (drawable, timePoint) {
             drawable.currentOrientation = {x:0.0, y:Math.PI*2*(timePoint/7000), z:0.0};
@@ -555,8 +556,8 @@ window.MyScene = (function () {
             translate: {x:0.00, y:-0.016, z:0.15},
             scale: {scale:0.01},
             rotate: {x:0/DEG, y:180/DEG, z:90/DEG}, 
-            greenColor: {r:0.2, g:0.9, b:0.6},
-            blueColor: {r:0.2, g:0.6, b:0.9}
+            greenColor: {r:0.2, g:0.7, b:0.5},
+            blueColor: {r:0.2, g:0.5, b:0.7}
         };
         /* After a bit more refinement, these controlleresques will probably replace the controller models altogether. */
         /* But for now they're a bit too experimental. */
@@ -566,7 +567,7 @@ window.MyScene = (function () {
             _hidden_beneath_floor, 
             _controlleresque.scale, 
             null,
-            {textureLabel:'null', shaderLabel:'diffuse', baseColor: _controlleresque.blueColor}
+            {shaderLabel:'diffuse', texture: scene.addTextureFromColor(_controlleresque.blueColor)}
         );
         c1.translation = _controlleresque.translate;
         c1.rotation = _controlleresque.rotate;
@@ -578,7 +579,7 @@ window.MyScene = (function () {
             _hidden_beneath_floor, 
             _controlleresque.scale, 
             null,
-            {textureLabel:'null', shaderLabel:'diffuse', baseColor: _controlleresque.greenColor}
+            {shaderLabel:'diffuse', texture: scene.addTextureFromColor(_controlleresque.greenColor)}
         );
         c2.translation = _controlleresque.translate;
         c2.rotation = _controlleresque.rotate;
@@ -589,8 +590,8 @@ window.MyScene = (function () {
             _hidden_beneath_floor, /* Hide under floor until needed */
             {w: 0.1, h: 0.03, d: 0.3},
             null,
-            {label: 'gpTracker1', textureLabel: 'null', shaderLabel: 'diffuse', groupLabel: 'gpTrackers',
-            baseColor: {r:0.1, g:0.2, b:0.6, a:1.0}} /* Blue */
+            {label: 'gpTracker1', shaderLabel: 'diffuse', groupLabel: 'gpTrackers',
+            texture: scene.addTextureFromColor({r:0.1, g:0.2, b:0.6, a:1.0})} /* Blue */
         );
         tracker1.behaviours.push(FCUtil.makeGamepadTracker(scene, 0, buttonHandler));
 
@@ -598,8 +599,8 @@ window.MyScene = (function () {
             _hidden_beneath_floor, /* Hide under floor until needed */
             {w: 0.1, h: 0.03, d: 0.3},
             null,
-            {label: 'gpTracker2', textureLabel: 'null', shaderLabel: 'diffuse', groupLabel: 'gpTrackers',
-            baseColor: {r:0.1, g:0.6, b:0.2, a:1.0}} /* Green */
+            {label: 'gpTracker2', shaderLabel: 'diffuse', groupLabel: 'gpTrackers',
+            texture: scene.addTextureFromColor({r:0.1, g:0.6, b:0.2, a:1.0})} /* Green */
         );
         tracker2.behaviours.push(FCUtil.makeGamepadTracker(scene, 1, buttonHandler));
         
@@ -613,7 +614,7 @@ window.MyScene = (function () {
             {
                 label: 'infoDisplay',
                 textureLabel: 'white',
-                shaderLabel: 'basic'
+                shaderLabel: 'diffuse'
             }
         );
         infoDisplay.behaviours.push(FCUtil.makeGamepadTracker(scene, 1, null));
