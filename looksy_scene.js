@@ -217,10 +217,9 @@ window.MyScene = (function () {
     
     /* Remember, $this != scene */
     TheScene.prototype.updateScene = function (params, scene) {
-        console.log(params);
         var wrangler = this;
         
-        console.log('Callback was called back with params', params);
+        console.log('Scene update callback was called back with params', params);
         
         /* Update the wrangler immediately since it's needed immediately */
         var sceneParams = params || {}
@@ -247,7 +246,6 @@ window.MyScene = (function () {
             spindle.pos.y = skySpindleParams.verticalOffset || -20.1;
             
             var floorParams = sceneParams.floor || {};
-            console.log('Floor params', floorParams);
             var floor = scene.getObjectByLabel('floor');
             floor.textureLabel = floorParams.textureLabel || 'concrete01';
             floor.shaderLabel = floorParams.shaderLabel || 'basic';
@@ -567,10 +565,11 @@ window.MyScene = (function () {
             _controlleresque.src, 
             _hidden_beneath_floor, 
             _controlleresque.scale, 
-            _controlleresque.rotate, 
+            null,
             {textureLabel:'null', shaderLabel:'diffuse', baseColor: _controlleresque.blueColor}
         );
         c1.translation = _controlleresque.translate;
+        c1.rotation = _controlleresque.rotate;
         c1.behaviours.push(FCUtil.makeGamepadTracker(scene, 0, null));
         scene.addObject(c1);
         
@@ -578,10 +577,11 @@ window.MyScene = (function () {
             _controlleresque.src, 
             _hidden_beneath_floor, 
             _controlleresque.scale, 
-            _controlleresque.rotate, 
+            null,
             {textureLabel:'null', shaderLabel:'diffuse', baseColor: _controlleresque.greenColor}
         );
         c2.translation = _controlleresque.translate;
+        c2.rotation = _controlleresque.rotate;
         c2.behaviours.push(FCUtil.makeGamepadTracker(scene, 1, null));
         scene.addObject(c2);
                 
